@@ -10,3 +10,9 @@ an automatically generated excel document
 
 The program can also change temperature set-points within the fermenter through the usage
 of pumps attached to the fermenters
+
+## Setup
+
+1. Create a new virtual environment: `virtualenv --python=`which python3` env`
+2. Activate the virtual environment: source env/bin/activate
+3. Install the package in development mode: `python setup.py develop`

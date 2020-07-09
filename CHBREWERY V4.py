@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#Import libraries
+# Import libraries
 from time import sleep
 import time
 import serial
@@ -9,31 +9,36 @@ from openpyxl import Workbook
 import os
 import datetime
 import matplotlib.pyplot as plt
-import keyboard #Using module keyboard
+import keyboard # Using module keyboard
 import sys
 
-#FUNCTIONS
-#This function asks user if they will be using a fermenter for the experiment
+MODE = "dev"
+
+if MODE is "dev":
+    from brewlab import fakeSerial as serial
+
+# FUNCTIONS
+# This function asks user if they will be using a fermenter for the experiment
 def fermChoose(fermNum,ser):
     ferm_stat = False   
-    print ("\nWill fermenter " + str(fermNum) + " be run for the experiment? type y/n for yes or no")#Ask user which fermenters will be run
+    print("Will fermenter " + str(fermNum) + " be run for the experiment? type y/n for yes or no")  # Ask user which fermenters will be run
     while (True):
         reply = str(input())
         if (reply == "y" or reply == "Y"):
-            ferm_stat= True
-            print("\nActivating fermenter " + str(fermNum))
-            ser.write((('1').strip('\n')).encode()) #send message to Arduino to log data from fermenter        
+            ferm_stat = True
+            print("Activating fermenter " + str(fermNum))
+            ser.write('1') #send message to Arduino to log data from fermenter        
             sleep(0.1)
             return ferm_stat
         elif (reply == "n" or reply == "N"):
-            #send message to Arduino to NOT log data from fermenter
-            ser.write((('0').strip('\n')).encode()) #send message to Arduino to log data from fermenter        
+            # Send message to Arduino to NOT log data from fermenter
+            ser.write('0') # Send message to Arduino to log data from fermenter        
             sleep(0.1)
             return ferm_stat
         else:
             "error type y for yes or n for no\n"
     
-#This function asks user what temperature they want to set fermenter to
+# This function asks user what temperature they want to set fermenter to
 def fermTemp(fermNum):
     print("\nplease input an integer for temperature from 4 - 23 C")
     while (True):    
@@ -44,19 +49,19 @@ def fermTemp(fermNum):
         else:
             print("error type an integer between 4 and 23\n")
 
-#This function generates a filename based on the date & test number
-#It checks existing files in the folder to ensure that no overwrite occurs            
+# This function generates a filename based on the date & test number
+# It checks existing files in the folder to ensure that no overwrite occurs            
 def createDataFile():
-    path = os.chdir("C:\\Users\Public\Documents\CHBreweryData")#Define directory
-    today = datetime.date.today()#Get current date
-    #print (today)
-    testNum = 1; #set current test number
-    dest_filename = str(today)+ "test" + str(testNum) +".xlsx"#generate file name
-    #print(dest_filename)#print file name
-    fileList = os.listdir(path)#get list of items in folder
-    #print (fileList)#print list
-    lengthList = len(fileList)#get list length
-    #print(fileList[0])
+    path = os.chdir("C:\\Users\Public\Documents\CHBreweryData")  # Define directory
+    today = datetime.date.today()  # Get current date
+
+    testNum = 1  # Set current test number
+    dest_filename = str(today)+ "test" + str(testNum) +".xlsx"  # Generate file name
+
+    fileList = os.listdir(path)  # Get list of items in folder
+
+    lengthList = len(fileList)  # Get list length
+
     for x in range(0,lengthList):#for the length of the list
         fileName = fileList[x] #get the name of the list
         #print (fileName[0:10])
@@ -67,23 +72,24 @@ def createDataFile():
     wb.save(filename = dest_filename)#save workbook
     return dest_filename
 
-#Connects to Arduino and prints hello to confirm connection
+# Connects to Arduino and prints hello to confirm connection
 def ardCon(COM_NUM):
     print ("Connecting to Arduino\n")
     try:
-        ser = serial.Serial(COM_NUM, 9600,timeout=0) # Establish the connection on specified COM port
+        ser = serial.Serial(COM_NUM, 9600, timeout=0) # Establish the connection on specified COM port
         sleep(2)
-        ser.write(('hello\n').encode())
+        ser.write("Hello")
         sleep(5)
-        reply = ((ser.readline()).decode())
-        print (reply.strip('\n'))
-    except:
+        reply = ser.readline()
+        print(reply.strip('\n'))
+    except AttributeError as e:
         #serial.close()
+        print(e)
         print ("No connection to Arduino, terminating program")
         sys.exit()
     return ser
 
-#Begin communication with arduinos connected to the systemy
+# Begin communication with arduinos connected to the system
 COM1 = 'COM3'
 COM2 = 'COM4'
 COM3 = 'COM5'
@@ -92,7 +98,7 @@ ser1 = ardCon(COM1)
 ser2 = ardCon(COM2)
 ser3 = ardCon(COM3)
 
-#Ask users which fermenters they want to use
+# Ask users which fermenters they want to use
 ferm1 = fermChoose(1,ser1)
 if (ferm1 == True):
     fTemp1 = fermTemp(1)
@@ -103,22 +109,22 @@ ferm3 = fermChoose(3,ser3)
 if (ferm3 == True):
     fTemp3 = fermTemp(3)
 
-#Create workbook#
-wb = Workbook()#generate workbook
-ws1 = wb.active#activate workbook
+# Create workbook
+wb = Workbook()  # generate workbook
+ws1 = wb.active  # activate workbook
 ws1.title = "Fermentation Data"
 
 fileName = createDataFile()
 print (str(fileName) + " data file generated")
     
-#Create lists to hold data
+# Create lists to hold data
 if (ferm1 == True):
     T1 = list()
     PH1 = list()
     DO1 = list()
     t1 = list()
     ws1['A1'] = "Fermenter 1 Data"
-    #define data entry headers
+    # define data entry headers
     ws1['A2'] = "Time (min)"
     ws1['B2'] = "Temperature (C)"
     ws1['C2'] = "PH"
@@ -130,7 +136,7 @@ if (ferm2 == True):
     DO2 = list()
     t2 = list()
     ws1['E1'] = "Fermenter 2 Data"
-    #define data entry headers
+    # define data entry headers
     ws1['E2'] = "Time (min)"
     ws1['F2'] = "Temperature (C)"
     ws1['G2'] = "PH"
@@ -142,16 +148,17 @@ if (ferm3 == True):
     DO3 = list()
     t3 =list()
     ws1['I1'] = "Fermenter 3 Data"
-    #define data entry headers
+    # define data entry headers
     ws1['I2'] = "Time (min)"
     ws1['J2'] = "Temperature (C)"
     ws1['K2'] = "PH"
     ws1['L2'] = "Dissolved Oxygen (mg/L)"
     
-#Use infinite loop for data acquisition
+# Use infinite loop for data acquisition
 fermAct = True
-sleep(0.5)#wait a bit for arduino to catch up
-#Define flags
+sleep(0.5)  # Wait a bit for arduino to catch up
+
+# Define flags
 PHflag = False
 DOflag = False
 tflag = False
@@ -171,15 +178,15 @@ dataRun = False
 while (fermAct == True):
 
     if (ferm1 == True):
-        ser1.write(('F\n').encode())#let arduino know to send F1 data
+        ser1.write('F\n')  # let arduino know to send F1 data
         time.sleep(0.5)
-        data = ((ser1.readline()).decode()).strip('\n')#readline from buffer and remove newline
-        print (data)
+        data = ser1.readline()  # readline from buffer and remove newline
+        print(data)
         if (str(data[0:2]) == "F1"):
             time.sleep(0.1)
-            count = 0#create counter for data collection
-            while (count < 4):#while all data has not been collected
-                data = ((ser1.readline()).decode()).strip('\n')#readline from buffer and remove newline
+            count = 0  # reate counter for data collection
+            while (count < 4):  # while all data has not been collected
+                data = ser1.readline()  # readline from buffer and remove newline
                 print(data)
             
                 if (str(data[0:2]) =="ti" and tflag == False):
@@ -262,26 +269,26 @@ while (fermAct == True):
         
                 figure1Active = True
             else:
-                plt.subplot(311)#create plot of time vs. Temp 
+                plt.subplot(311)  # Create plot of time vs. Temp 
                 if (i1 > 100):
                     plt.plot(t1[(i1-50):i1],T1[(i1-50):i1],color = 'r')
                 else:
                     plt.plot(t1,T1,color ='r')
                             
-                plt.subplot(312)#create plot of time vs. Temp 
+                plt.subplot(312)  # Create plot of time vs. Temp 
                 if (i1 > 100):
                     plt.plot(t1[(i1-50):i1],PH1[(i1-50):i1],color = 'b')
                 else:
                     plt.plot(t1,PH1,color ='b')
-                plt.subplot(313)#create plot of time vs. Temp 
+                plt.subplot(313)  # Create plot of time vs. Temp 
                 if (i1 > 100):
                     plt.plot(t1[(i1-50):i1],DO1[(i1-50):i1],color = 'g')
                 else:
                     plt.plot(t1,DO1,color ='g')
-                plt.draw()#update plot
+                plt.draw()  # Update plot
                 plt.pause(0.05)
-                    #plt.show()
-            count1 = count1+1#increase index
+
+            count1 = count1+1  # Increase index
     if (i1 > 1):
         if (fTemp1 < T1[(i1-1)]):
             ser1.write(('PT\n').encode())
@@ -290,13 +297,13 @@ while (fermAct == True):
 
     if (ferm2 == True):
         
-        ser2.write(('F\n').encode())#let arduino know to send F1 data
+        ser2.write(('F\n').encode())  # Let arduino know to send F1 data
         time.sleep(0.5)
-        data = ((ser2.readline()).decode()).strip('\n')#readline from buffer and remove newline
+        data = ((ser2.readline()).decode()).strip('\n')  # Readline from buffer and remove newline
         print (data)
         if (str(data[0:2]) == "F2"):
             time.sleep(0.1)
-            count = 0#create counter for data collection
+            count = 0  # Create counter for data collection
             while (count < 4):#while all data has not been collected
                 data = ((ser2.readline()).decode()).strip('\n')#readline from buffer and remove newline
                 print(data)
