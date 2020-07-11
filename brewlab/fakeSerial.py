@@ -22,7 +22,7 @@ class Serial:
         self.rtscts   = rtscts
         self._isOpen  = True
         self._receivedData = ""
-        self._data = "It was the best of times.\nIt was the worst of times.\n"
+        self._data = "start\nF1\nti1\nTe21\nDO13\nPH7.1\n"
 
     ## isOpen()
     # returns True if the port to the Arduino is open.  False otherwise
@@ -58,6 +58,8 @@ class Serial:
     # reads characters from the fake Arduino until a \n is found.
     def readline( self ):
         returnIndex = self._data.index( "\n" )
+        self._data += "F1\nti1\nTe21\nDO13\nPH7.1\n"
+
         if returnIndex != -1:
             s = self._data[0:returnIndex+1]
             self._data = self._data[returnIndex+1:]

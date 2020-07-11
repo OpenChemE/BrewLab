@@ -5,7 +5,7 @@ from time import sleep
 import time
 import serial
 from openpyxl import Workbook
-#from openpyxl.compat import range
+
 import os
 import datetime
 import matplotlib.pyplot as plt
@@ -16,6 +16,8 @@ MODE = "dev"
 
 if MODE is "dev":
     from brewlab import fakeSerial as serial
+
+raise DeprecationWarning
 
 # FUNCTIONS
 # This function asks user if they will be using a fermenter for the experiment
@@ -62,14 +64,14 @@ def createDataFile():
 
     lengthList = len(fileList)  # Get list length
 
-    for x in range(0,lengthList):#for the length of the list
-        fileName = fileList[x] #get the name of the list
-        #print (fileName[0:10])
-        if str(fileName[0:10]) == str(today):#if date of file is today
-            testNum = testNum + 1#increase test number by 1
-            #print ("confirmed")
+    for x in range(0,lengthList):  # For the length of the list
+        fileName = fileList[x]  # Get the name of the list
+
+        if str(fileName[0:10]) == str(today):  # If date of file is today
+            testNum = testNum + 1  # Increase test number by 1
+
     dest_filename = str(today)+ "test" + str(testNum) +".xlsx"#create name  
-    wb.save(filename = dest_filename)#save workbook
+    wb.save(filename = dest_filename)  # save workbook
     return dest_filename
 
 # Connects to Arduino and prints hello to confirm connection
@@ -83,7 +85,7 @@ def ardCon(COM_NUM):
         reply = ser.readline()
         print(reply.strip('\n'))
     except AttributeError as e:
-        #serial.close()
+
         print(e)
         print ("No connection to Arduino, terminating program")
         sys.exit()

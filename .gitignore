@@ -2,3 +2,4 @@
 brewlab.egg-info
 env/
 brewlab/__pycache__/
+data/
