@@ -2,6 +2,8 @@ import serial
 import os
 import datetime
 from time import sleep
+import pandas as pd
+import numpy as np
 
 from openpyxl import Workbook
 
@@ -64,3 +66,21 @@ def createDataFile(wb):
     dest_filename = str(today)+ "test" + str(testNum) +".xlsx"  # Create name  
     wb.save(filename = dest_filename)  # Save workbook
     return dest_filename
+
+def init_df():
+    arrays = [
+        np.array([
+            'Fermenter 1', 'Fermenter 1', 'Fermenter 1', 'Fermenter 1',
+            'Fermenter 2', 'Fermenter 2', 'Fermenter 2', 'Fermenter 2',
+            'Fermenter 3', 'Fermenter 3', 'Fermenter 3', 'Fermenter 3',
+        ]),
+        np.array([
+            'Time (min)', 'Temp (C)', 'pH', 'DO (mg/L)',
+            'Time (min)', 'Temp (C)', 'pH', 'DO (mg/L)',
+            'Time (min)', 'Temp (C)', 'pH', 'DO (mg/L)',
+        ]),
+    ]
+
+    df = pd.DataFrame(columns=arrays)
+
+    return df
