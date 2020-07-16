@@ -31,7 +31,7 @@ def run():
     # Ask users which fermenters they want to use
     (temp1, temp2, temp3) = setup_ferms(ser1, ser2, ser3)
 
-    df = init_df()
+    df, filename = init_df()
 
     sleep(1)  # Wait a bit for arduino to catch up
 
@@ -43,6 +43,11 @@ def run():
             fermControl(ser1, temp1, row[3], True)
         except Exception as e:
             print("Could not get data on Fermenter 1. Caught exception: ", e)
+
+        timestamp = datetime.datetime.now()
+        df.loc[timestamp, "Fermenter 1"] = row
+
+        df.to_csv(filename)
 
         sleep(60)
 
