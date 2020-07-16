@@ -12,7 +12,7 @@ import keyboard # Using module keyboard
 import sys
 
 from brewlab.connections import ardCon, get_data
-from brewlab.user import fermChoose, fermTemp, init_df
+from brewlab.user import fermChoose, fermTemp, init_df, setup_ferms
 from brewlab.control import fermControl
 
 if os.environ.get("MODE") == "dev":
@@ -23,41 +23,30 @@ COM1 = 'COM3'
 COM2 = 'COM4'
 COM3 = 'COM5'
 
-ser1 = ardCon(COM1)
-ser2 = ardCon(COM2)
-ser3 = ardCon(COM3)
+def run():
+    ser1 = ardCon(COM1)
+    ser2 = ardCon(COM2)
+    ser3 = ardCon(COM3)
 
-# Ask users which fermenters they want to use
-ferm1 = fermChoose(1,ser1)
-if (ferm1 == True):
-    fTemp1 = fermTemp(1)
-ferm2 = fermChoose(2,ser2)
-if (ferm2 == True):
-    fTemp2 = fermTemp(2)
-ferm3 = fermChoose(3,ser3)
-if (ferm3 == True):
-    fTemp3 = fermTemp(3)
+    # Ask users which fermenters they want to use
+    (temp1, temp2, temp3) = setup_ferms(ser1, ser2, ser3)
 
-df = init_df()
+    df = init_df()
 
-sleep(1)  # Wait a bit for arduino to catch up
+    sleep(1)  # Wait a bit for arduino to catch up
 
-# Define flags
-PHflag = False
-DOflag = False
-tflag = False
-Tflag = False
+    # Begin loop to read data
+    while True:
 
-i1 = 0
+        try:
+            row = get_data('F1', ser1)
+            fermControl(ser1, temp1, row[3], True)
+        except Exception as e:
+            print("Could not get data on Fermenter 1. Caught exception: ", e)
 
-saveCount = 0  # Counter for saving excel sheet
-dataRun = False
+        sleep(60)
 
-while True:
+        print ("next iteration")
 
-    row = get_data('F1', ser1)
-    fermControl(ser1, fTemp1, row[3], True)
-    
-    sleep(60)
-       
-    print ("next iteration")
+if __name__ == "__main__":
+    run()

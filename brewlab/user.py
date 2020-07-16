@@ -5,10 +5,6 @@ from time import sleep
 import pandas as pd
 import numpy as np
 
-from openpyxl import Workbook
-
-print(os.environ.get("MODE") == "dev")
-
 if os.environ.get("MODE") == "dev":
     from brewlab import fakeSerial as serial
 
@@ -84,3 +80,21 @@ def init_df():
     df = pd.DataFrame(columns=arrays)
 
     return df
+
+def setup_ferms(ser1, ser2, ser3):
+    if fermChoose(1, ser1):
+        fTemp1 = fermTemp(1)
+    else:
+        fTemp1 = np.NaN
+
+    if fermChoose(2, ser2):
+        fTemp2 = fermTemp(2)
+    else:
+        fTemp2 = np.NaN
+
+    if fermChoose(3, ser3):
+        fTemp3 = fermTemp(3)
+    else:
+        fTemp3 = np.NaN
+
+    return (fTemp1, fTemp2, fTemp3)
