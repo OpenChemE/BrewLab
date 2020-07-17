@@ -1,0 +1,120 @@
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+#:import MeshLinePlot kivy.garden.graph.MeshLinePlot
+
+MyScreenManager:
+    transition: FadeTransition()
+    MenuScreen:
+    GraphScreen:
+
+<MenuScreen>:
+    name: 'menu'
+
+    Label:
+        text: "[b][size=48]CHBE BrewLab[/size][/b]"
+        markup: True
+        x: root.x + root.width * 0.2
+        top: self.height and root.y + root.height * 0.95
+        color: 1,1,1,1
+        size_hint: 0.2, 0.2
+
+    Label:
+        text: "[b][size=18]Temperature Setpoint[/size][/b]"
+        markup: True
+        x: root.x + root.width * 0.625
+        top: self.height and root.y + root.height * 0.8
+        color: 1,1,1,1
+        size_hint: 0.2, 0.2
+
+    GridLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+        rows: 3
+        cols: 3
+        size_hint: [1, 0.5]
+        top: self.height and root.y + root.height * 0.625
+
+        ## Fermenter 1
+        ToggleButton:
+            text: 'Fermenter 1'
+            size_hint: [0.4, 1]
+        Slider:
+            id: f1
+            min: 18
+            max: 22
+            step: 0.5
+            size_hint: [0.4, 1]
+        Label:
+            text: str(f1.value)
+
+        ## Fermenter 2
+        ToggleButton:
+            text: 'Fermenter 2'
+            size_hint: [0.4, 1]
+        Slider:
+            id: f2
+            min: 18
+            max: 22
+            step: 0.5
+            size_hint: [0.4, 1]
+        Label:
+            text: str(f2.value)
+
+        ## Fermenter 3
+        ToggleButton:
+            text: 'Fermenter 3'
+            size_hint: [0.4, 1]
+        Slider:
+            id: f3
+            min: 18
+            max: 22
+            step: 0.5
+            size_hint: [0.4, 1]
+        Label:
+            text: str(f3.value)
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint: [1, 1]
+        Button:
+            text: "[b]Execute[/b]"
+            on_release: app.root.current = 'graph'
+            markup: 'True'
+            size_hint: 0.1, 0.1
+
+<GraphScreen>:
+    name: "graph"
+
+    BoxLayout:
+        orientation: "vertical"
+        GridLayout:
+            size_hint: [1, .8]
+            cols: 1
+            rows: 3
+            Graph:
+                id: temp
+                xlabel: ""
+                ylabel: "Temp (C)"
+            Graph:
+                id: pH
+                xlabel: ""
+                ylabel: "pH"
+            Graph:
+                id: DO
+                xlabel: ""
+                ylabel: "DO (mg/L)"
+        BoxLayout:
+            size_hint: [1, .2]
+            orientation: "horizontal"
+            Button:
+                text: "Start"
+                bold: True
+                on_press: root.start()
+            Button:
+                text: "Stop"
+                bold: True
+                on_press: root.stop()
+            Button:
+                text: "Back"
+                bold: True
+                on_release: app.root.current = 'menu'
