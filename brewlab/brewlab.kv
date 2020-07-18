@@ -36,12 +36,14 @@ MyScreenManager:
 
         ## Fermenter 1
         ToggleButton:
+            id: ferm1
             text: 'Fermenter 1'
             size_hint: [0.4, 1]
         Slider:
             id: f1
-            min: 18
-            max: 22
+            min: 4
+            value: 18.0
+            max: 23
             step: 0.5
             size_hint: [0.4, 1]
         Label:
@@ -49,12 +51,14 @@ MyScreenManager:
 
         ## Fermenter 2
         ToggleButton:
+            id: ferm2
             text: 'Fermenter 2'
             size_hint: [0.4, 1]
         Slider:
             id: f2
-            min: 18
-            max: 22
+            min: 4
+            value: 18.0
+            max: 23
             step: 0.5
             size_hint: [0.4, 1]
         Label:
@@ -62,12 +66,14 @@ MyScreenManager:
 
         ## Fermenter 3
         ToggleButton:
+            id: ferm3
             text: 'Fermenter 3'
             size_hint: [0.4, 1]
         Slider:
             id: f3
-            min: 18
-            max: 22
+            min: 4
+            value: 18.0
+            max: 23
             step: 0.5
             size_hint: [0.4, 1]
         Label:
@@ -78,6 +84,7 @@ MyScreenManager:
         size_hint: [1, 1]
         Button:
             text: "[b]Execute[/b]"
+            on_press: root.get_inputs()
             on_release: app.root.current = 'graph'
             markup: 'True'
             size_hint: 0.1, 0.1
@@ -101,7 +108,7 @@ MyScreenManager:
                 ylabel: "pH"
             Graph:
                 id: DO
-                xlabel: ""
+                xlabel: "Time"
                 ylabel: "DO (mg/L)"
         BoxLayout:
             size_hint: [1, .2]
@@ -110,11 +117,30 @@ MyScreenManager:
                 text: "Start"
                 bold: True
                 on_press: root.start()
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    text: '7 Days'
+                    group: 'time'
+                ToggleButton:
+                    text: '3 Days'
+                    group: 'time'
+                ToggleButton:
+                    text: '1 Day'
+                    group: 'time'
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    text: 'Fermenter 1'
+                    group: 'graphData'
+                ToggleButton:
+                    text: 'Fermenter 2'
+                    group: 'graphData'
+                ToggleButton:
+                    text: 'Fermenter 3'
+                    group: 'graphData'
             Button:
                 text: "Stop"
                 bold: True
                 on_press: root.stop()
-            Button:
-                text: "Back"
-                bold: True
                 on_release: app.root.current = 'menu'

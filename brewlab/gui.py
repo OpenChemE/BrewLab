@@ -4,8 +4,18 @@ from kivy.app import App
 from kivy.garden.graph import MeshLinePlot
 from kivy.clock import Clock
 
+from brewlab.user import fermChoose
+
 class MenuScreen(Screen):
-    pass
+
+    def get_inputs(self):
+        # Ensures that App variables are clear if state is not down
+        # and sets App variable to selected button when pressed
+        fermChoose(self.ids.ferm1.state,
+                   self.ids.ferm2.state, 
+                   self.ids.ferm3.state
+                )
+
 
 class MyScreenManager(ScreenManager):
     pass
