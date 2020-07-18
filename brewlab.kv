@@ -40,14 +40,14 @@ MyScreenManager:
             text: 'Fermenter 1'
             size_hint: [0.4, 1]
         Slider:
-            id: f1
+            id: f1Temp
             min: 4
             value: 18.0
             max: 23
             step: 0.5
             size_hint: [0.4, 1]
         Label:
-            text: str(f1.value)
+            text: str(f1Temp.value)
 
         ## Fermenter 2
         ToggleButton:
@@ -55,14 +55,14 @@ MyScreenManager:
             text: 'Fermenter 2'
             size_hint: [0.4, 1]
         Slider:
-            id: f2
+            id: f2Temp
             min: 4
             value: 18.0
             max: 23
             step: 0.5
             size_hint: [0.4, 1]
         Label:
-            text: str(f2.value)
+            text: str(f2Temp.value)
 
         ## Fermenter 3
         ToggleButton:
@@ -70,14 +70,14 @@ MyScreenManager:
             text: 'Fermenter 3'
             size_hint: [0.4, 1]
         Slider:
-            id: f3
+            id: f3Temp
             min: 4
             value: 18.0
             max: 23
             step: 0.5
             size_hint: [0.4, 1]
         Label:
-            text: str(f3.value)
+            text: str(f3Temp.value)
 
     BoxLayout:
         orientation: 'horizontal'

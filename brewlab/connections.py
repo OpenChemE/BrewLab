@@ -2,9 +2,26 @@ import serial
 from time import sleep
 import os
 import sys
+from collections import namedtuple
+from numpy import NaN
 
 if os.environ.get("MODE") == "dev":
     from brewlab import fakeSerial as serial
+
+Fermenter = namedtuple(
+    'Fermenter',
+    [
+        'active',
+        'auto',
+        'temp',
+        'serialCon'
+    ]
+)
+
+# Begin communication with arduinos connected to the system
+COM1 = 'COM3'
+COM2 = 'COM4'
+COM3 = 'COM5'
 
 # Connects to Arduino and prints hello to confirm connection
 def ardCon(COM_NUM):
@@ -22,6 +39,32 @@ def ardCon(COM_NUM):
         print ("No connection to Arduino, terminating program")
         sys.exit()
     return ser
+
+
+def setup():
+    ferm1 = Fermenter(
+        active=False,
+        auto=True,
+        temp=NaN,
+        serialCon=ardCon(COM1)
+    )
+
+    ferm2 = Fermenter(
+        active=False,
+        auto=True,
+        temp=NaN,
+        serialCon=ardCon(COM2)
+    )
+
+    ferm3 = Fermenter(
+        active=False,
+        auto=True,
+        temp=NaN,
+        serialCon=ardCon(COM3)
+    )
+
+    return [ferm1, ferm2, ferm3]
+
 
 def get_data(fermenter, serialCon):
 

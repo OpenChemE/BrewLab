@@ -3,19 +3,31 @@ import numpy as np
 from kivy.app import App
 from kivy.garden.graph import MeshLinePlot
 from kivy.clock import Clock
+from collections import namedtuple
+import serial
+import os
 
+from brewlab.connections import setup
 from brewlab.user import fermChoose
+
+if os.environ.get("MODE") == "dev":
+    from brewlab import fakeSerial as serial
 
 class MenuScreen(Screen):
 
     def get_inputs(self):
-        # Ensures that App variables are clear if state is not down
-        # and sets App variable to selected button when pressed
-        fermChoose(self.ids.ferm1.state,
-                   self.ids.ferm2.state, 
-                   self.ids.ferm3.state
-                )
 
+        if self.ids.ferm1.state is "down":
+            fermenters[0] = fermenters[0]._replace(
+                active=True, temp=self.ids.f1Temp.value)
+
+        if self.ids.ferm2.state is "down":
+            fermenters[1] = fermenters[1]._replace(
+                active=True, temp=self.ids.f2Temp.value)
+
+        if self.ids.ferm3.state is "down":
+            fermenters[2] = fermenters[2]._replace(
+                active=True, temp=self.ids.f3Temp.value)
 
 class MyScreenManager(ScreenManager):
     pass
@@ -55,4 +67,5 @@ class BrewLabApp(App):
     pass
 
 if __name__ == '__main__':
+    fermenters = setup()
     BrewLabApp().run()
