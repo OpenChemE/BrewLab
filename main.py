@@ -6,32 +6,26 @@ from kivy.clock import Clock
 from collections import namedtuple
 import serial
 import os
+import datetime
+from functools import partial
 
-from brewlab.connections import setup, activateArd
+from brewlab.user import init_df
+from brewlab.connections import setup, activateArd, get_data
+from brewlab.control import fermControl
 
 if os.environ.get("MODE") == "dev":
     from brewlab import fakeSerial as serial
 
-def run():
+def callback(df, filename, *largs):
+    for ferm in fermenters:
+        if ferm.active is True:
+            row = get_data(ferm.id, ferm.serialCon)
+            fermControl(ferm.serialCon, ferm.temp, row[3], ferm.auto)
 
-    df, filename = init_df()
+            timestamp = datetime.datetime.now()
+            df.loc[timestamp, ferm.name] = row
 
-    while True:
-
-        try:
-            row = get_data('F1', ser1)
-            fermControl(ser1, temp1, row[3], True)
-        except Exception as e:
-            print("Could not get data on Fermenter 1. Caught exception: ", e)
-
-        timestamp = datetime.datetime.now()
-        df.loc[timestamp, "Fermenter 1"] = row
-
-        df.to_csv(filename)
-
-        sleep(60)
-
-        print("next iteration")
+            df.to_csv(filename)
 
 class MenuScreen(Screen):
 
@@ -52,7 +46,6 @@ class MenuScreen(Screen):
         for ferm in fermenters:
             activateArd(ferm)
 
-
 class MyScreenManager(ScreenManager):
     pass
 
@@ -72,10 +65,16 @@ class GraphScreen(Screen):
         self.ids.temp.add_plot(self.tempplot)
         self.ids.pH.add_plot(self.pHplot)
         self.ids.DO.add_plot(self.DOplot)
+
+        df, filename = init_df()
+        self.main_callback = partial(callback, df, filename)
+
         Clock.schedule_interval(self.get_value, 1)
+        Clock.schedule_interval(self.main_callback, 1)
 
     def stop(self):
         Clock.unschedule(self.get_value)
+        Clock.unschedule(self.main_callback)
 
     def get_value(self, dt):
         self.level.append(np.random.random_sample()*100)

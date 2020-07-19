@@ -11,6 +11,8 @@ if os.environ.get("MODE") == "dev":
 Fermenter = namedtuple(
     'Fermenter',
     [
+        'id',
+        'name',
         'active',
         'auto',
         'temp',
@@ -43,6 +45,8 @@ def ardCon(COM_NUM):
 
 def setup():
     ferm1 = Fermenter(
+        id='F1',
+        name='Fermenter 1',
         active=False,
         auto=True,
         temp=NaN,
@@ -50,6 +54,8 @@ def setup():
     )
 
     ferm2 = Fermenter(
+        id='F2',
+        name='Fermenter 2',
         active=False,
         auto=True,
         temp=NaN,
@@ -57,6 +63,8 @@ def setup():
     )
 
     ferm3 = Fermenter(
+        id='F3',
+        name='Fermenter 3',
         active=False,
         auto=True,
         temp=NaN,
@@ -129,5 +137,4 @@ def get_data(fermenter, serialCon):
 
             if tflag and Tflag and DOflag and PHflag:
                 row = [time_1, ph_1, do_1, T1]
-
-    return row
+                return row
