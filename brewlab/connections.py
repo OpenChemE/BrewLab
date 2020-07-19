@@ -65,6 +65,13 @@ def setup():
 
     return [ferm1, ferm2, ferm3]
 
+def activateArd(fermenter):
+    if fermenter.active is True:
+        fermenter.serialCon.write('1')
+        sleep(0.1)
+    else:
+        fermenter.serialCon.write('0')
+        sleep(0.1)
 
 def get_data(fermenter, serialCon):
 
