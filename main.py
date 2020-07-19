@@ -16,6 +16,8 @@ from brewlab.control import fermControl
 if os.environ.get("MODE") == "dev":
     from brewlab import fakeSerial as serial
 
+SAMPLING_RATE = 5
+
 def callback(df, filename, *largs):
     for ferm in fermenters:
         if ferm.active is True:
@@ -25,11 +27,14 @@ def callback(df, filename, *largs):
             timestamp = datetime.datetime.now()
             df.loc[timestamp, ferm.name] = row
 
-            df.to_csv(filename)
+    df.to_csv(filename)
 
 class MenuScreen(Screen):
 
-    def get_inputs(self):
+    def __init__(self, **kwargs):
+        super(MenuScreen, self).__init__(**kwargs)
+
+    def execute(self):
 
         if self.ids.ferm1.state is "down":
             fermenters[0] = fermenters[0]._replace(
@@ -69,12 +74,19 @@ class GraphScreen(Screen):
         df, filename = init_df()
         self.main_callback = partial(callback, df, filename)
 
-        Clock.schedule_interval(self.get_value, 1)
-        Clock.schedule_interval(self.main_callback, 1)
+        self.ids.start.disabled = True
+
+        Clock.schedule_interval(self.get_value, SAMPLING_RATE)
+        Clock.schedule_interval(self.main_callback, SAMPLING_RATE)
 
     def stop(self):
-        Clock.unschedule(self.get_value)
-        Clock.unschedule(self.main_callback)
+        try:
+            Clock.unschedule(self.get_value)
+            Clock.unschedule(self.main_callback)
+        except AttributeError:
+            pass
+        finally:
+            self.ids.start.disabled = False
 
     def get_value(self, dt):
         self.level.append(np.random.random_sample()*100)

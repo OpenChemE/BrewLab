@@ -84,7 +84,7 @@ MyScreenManager:
         size_hint: [1, 1]
         Button:
             text: "[b]Execute[/b]"
-            on_press: root.get_inputs()
+            on_press: root.execute()
             on_release: app.root.current = 'graph'
             markup: 'True'
             size_hint: 0.1, 0.1
@@ -100,11 +100,9 @@ MyScreenManager:
             rows: 3
             Graph:
                 id: temp
-                xlabel: ""
                 ylabel: "Temp (C)"
             Graph:
                 id: pH
-                xlabel: ""
                 ylabel: "pH"
             Graph:
                 id: DO
@@ -113,10 +111,17 @@ MyScreenManager:
         BoxLayout:
             size_hint: [1, .2]
             orientation: "horizontal"
-            Button:
-                text: "Start"
-                bold: True
-                on_press: root.start()
+            BoxLayout:
+                orientation: 'vertical'
+                Button:
+                    text: "Start"
+                    id: start
+                    bold: True
+                    on_press: root.start()
+                Button:
+                    text: "Config"
+                    id: config
+                    bold: True
             BoxLayout:
                 orientation: 'vertical'
                 ToggleButton:
@@ -128,11 +133,13 @@ MyScreenManager:
                 ToggleButton:
                     text: '1 Day'
                     group: 'time'
+                    state: 'down'
             BoxLayout:
                 orientation: 'vertical'
                 ToggleButton:
                     text: 'Fermenter 1'
                     group: 'graphData'
+                    state: 'down'
                 ToggleButton:
                     text: 'Fermenter 2'
                     group: 'graphData'
