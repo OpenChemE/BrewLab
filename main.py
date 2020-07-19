@@ -66,6 +66,9 @@ class GraphScreen(Screen):
         self.xmin = 0
         self.xmax = num_data_points
 
+        self.range = '1 Day'
+        self.fermenter = 'Fermenter 1'
+
     def start(self):
         self.ids.temp.add_plot(self.tempplot)
         self.ids.pH.add_plot(self.pHplot)
@@ -73,6 +76,7 @@ class GraphScreen(Screen):
 
         df, filename = init_df()
         self.main_callback = partial(callback, df, filename)
+        self.df = df
 
         self.ids.start.disabled = True
 
@@ -88,11 +92,27 @@ class GraphScreen(Screen):
         finally:
             self.ids.start.disabled = False
 
+    def press(self, *args):
+        button = args[0]
+        state = args[1]
+
+        if button.group == "time" and state == "down":
+            self.range = button.text
+        elif button.group == "fermenter" and state == "down":
+            self.fermenter = button.text
+
+        print(self.range)
+        print(self.fermenter)
+
     def get_value(self, dt):
-        self.level.append(np.random.random_sample()*100)
-        self.tempplot.points = [(i, j/5) for i, j in enumerate(self.level)]
-        self.pHplot.points = [(i, j/5) for i, j in enumerate(self.level)]
-        self.DOplot.points = [(i, j/5) for i, j in enumerate(self.level)]
+        self.tempplot.points = [(i, j) for i, j in enumerate(
+            self.df[self.fermenter]['Temp (C)'])]
+
+        self.pHplot.points = [(i, j) for i, j in enumerate(
+            self.df[self.fermenter]['pH'])]
+
+        self.DOplot.points = [(i, j) for i, j in enumerate(
+            self.df[self.fermenter]['DO (mg/L)'])]
 
         self.tempplot.ymax = max(self.level)
         self.pHplot.ymax = max(self.level)

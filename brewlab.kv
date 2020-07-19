@@ -127,25 +127,31 @@ MyScreenManager:
                 ToggleButton:
                     text: '7 Days'
                     group: 'time'
+                    on_state: root.press(*args)
                 ToggleButton:
                     text: '3 Days'
                     group: 'time'
+                    on_state: root.press(*args)
                 ToggleButton:
                     text: '1 Day'
                     group: 'time'
                     state: 'down'
+                    on_state: root.press(*args)
             BoxLayout:
                 orientation: 'vertical'
                 ToggleButton:
                     text: 'Fermenter 1'
-                    group: 'graphData'
+                    group: 'fermenter'
                     state: 'down'
+                    on_state: root.press(*args)
                 ToggleButton:
                     text: 'Fermenter 2'
-                    group: 'graphData'
+                    group: 'fermenter'
+                    on_state: root.press(*args)
                 ToggleButton:
                     text: 'Fermenter 3'
-                    group: 'graphData'
+                    group: 'fermenter'
+                    on_state: root.press(*args)
             Button:
                 text: "Stop"
                 bold: True
