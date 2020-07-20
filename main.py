@@ -58,14 +58,105 @@ class ConfigScreen(Screen):
         super(ConfigScreen, self).__init__(**kwargs)
 
     def on_pre_enter(self, **kwargs):
-        self.ids.f1Temp.value = fermenters[0].temp
-        self.ids.f2Temp.value = fermenters[1].temp
-        self.ids.f3Temp.value = fermenters[2].temp
+        
+        if fermenters[0].active is True:
+            self.ids.f1Temp.value = fermenters[0].temp
+        
+        if fermenters[1].active is True:
+            self.ids.f2Temp.value = fermenters[1].temp
+        
+        if fermenters[2].active is True:
+            self.ids.f3Temp.value = fermenters[2].temp
 
         if fermenters[0].auto is True:
             self.ids.ferm1Auto.state = "down"
         else:
             self.ids.ferm1Man.state = "down"
+
+        if fermenters[1].auto is True:
+            self.ids.ferm1Auto.state = "down"
+        else:
+            self.ids.ferm1Man.state = "down"
+
+        if fermenters[2].auto is True:
+            self.ids.ferm1Auto.state = "down"
+        else:
+            self.ids.ferm1Man.state = "down"
+
+    def press(self, *args):
+        button = args[0]
+
+        if button.group == "f1Config" and button.text != "Auto":
+            fermenters[0] = fermenters[0]._replace(
+                auto=False)
+            
+            self.ids.p1on.disabled = False
+            self.ids.p1off.disabled = False
+            self.ids.p1off.state = "down"
+
+        elif button.group == "f2Config" and button.text != "Auto":
+            fermenters[1] = fermenters[1]._replace(
+                auto=False)
+
+            self.ids.p2on.disabled = False
+            self.ids.p2off.disabled = False
+            self.ids.p2off.state = "down"
+
+        elif button.group == "f3Config" and button.text != "Auto":
+            fermenters[2] = fermenters[2]._replace(
+                auto=False)
+
+            self.ids.p3on.disabled = False
+            self.ids.p3off.disabled = False
+            self.ids.p3off.state = "down"
+
+        elif button.group == "f1Config":
+            fermenters[0] = fermenters[0]._replace(
+                auto=True)
+
+            self.ids.p1on.disabled = True
+            self.ids.p1off.disabled = True
+            self.ids.p1off.state = "normal"
+            self.ids.p1on.state = "normal"
+
+        elif button.group == "f2Config":
+            fermenters[1] = fermenters[1]._replace(
+                auto=True)
+
+            self.ids.p2on.disabled = True
+            self.ids.p2off.disabled = True
+            self.ids.p2off.state = "normal"
+            self.ids.p2on.state = "normal"
+
+        elif button.group == "f3Config":
+            fermenters[2] = fermenters[2]._replace(
+                auto=True)
+
+            self.ids.p3on.disabled = True
+            self.ids.p3off.disabled = True
+            self.ids.p3off.state = "normal"
+            self.ids.p3on.state = "normal"
+
+    def pump(self, *args):
+        button = args[0]
+
+        if button.group == "p1Status" and button.text == "ON":
+            fermenters[0].serialCon.write('PT')
+        elif button.group == "p2Status" and button.text == "ON":
+            fermenters[1].serialCon.write('PT')
+        elif button.group == "p3Status" and button.text == "ON":
+            fermenters[2].serialCon.write('PT')
+        elif button.group == "p1Status":
+            fermenters[0].serialCon.write('PF')
+        elif button.group == "p1Status":
+            fermenters[1].serialCon.write('PF')
+        elif button.group == "p1Status":
+            fermenters[2].serialCon.write('PF')
+
+    def get_config(self):
+        fermenters[0] = fermenters[0]._replace(temp=self.ids.f1Temp.value)
+        fermenters[1] = fermenters[1]._replace(temp=self.ids.f2Temp.value)
+        fermenters[2] = fermenters[2]._replace(temp=self.ids.f3Temp.value)
 
 class MyScreenManager(ScreenManager):
     pass

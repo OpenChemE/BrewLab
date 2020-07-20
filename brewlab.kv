@@ -184,10 +184,12 @@ MyScreenManager:
                     text: "Auto"
                     id: ferm1Auto
                     group: 'f1Config'
+                    on_press: root.press(*args)
                 ToggleButton:
                     text: "Manual"
                     id: ferm1Man
                     group: 'f1Config'
+                    on_press: root.press(*args)
             BoxLayout:
                 Slider:
                     id: f1Temp
@@ -201,11 +203,17 @@ MyScreenManager:
                 orientation: 'horizontal'
                 size_hint: [0.3, 1]
                 ToggleButton:
-                    text: "On"
+                    text: "ON"
+                    bold: True
+                    on_press: root.pump(*args)
                     group: 'p1Status'
+                    id: p1on
                     disabled: True
                 ToggleButton:
-                    text: "Off"
+                    text: "OFF"
+                    bold: True
+                    id: p1off
+                    on_press: root.pump(*args)
                     group: 'p1Status'
                     disabled: True
 
@@ -220,10 +228,12 @@ MyScreenManager:
                     text: "Auto"
                     id: ferm2Auto
                     group: 'f2Config'
+                    on_press: root.press(*args)
                 ToggleButton:
                     text: "Manual"
                     id: ferm2Man
                     group: 'f2Config'
+                    on_press: root.press(*args)
             BoxLayout:
                 Slider:
                     id: f2Temp
@@ -237,11 +247,17 @@ MyScreenManager:
                 orientation: 'horizontal'
                 size_hint: [0.3, 1]
                 ToggleButton:
-                    text: "On"
+                    text: "ON"
+                    bold: True
+                    id: p2on
+                    on_press: root.pump(*args)
                     group: 'p2Status'
                     disabled: True
                 ToggleButton:
-                    text: "Off"
+                    text: "OFF"
+                    bold: True
+                    id: p2off
+                    on_press: root.pump(*args)
                     group: 'p2Status'
                     disabled: True
 
@@ -256,10 +272,12 @@ MyScreenManager:
                     text: "Auto"
                     id: ferm3Auto
                     group: 'f3Config'
+                    on_press: root.press(*args)
                 ToggleButton:
                     text: "Manual"
                     id: ferm3Man
                     group: 'f3Config'
+                    on_press: root.press(*args)
             BoxLayout:
                 Slider:
                     id: f3Temp
@@ -273,15 +291,22 @@ MyScreenManager:
                 orientation: 'horizontal'
                 size_hint: [0.3, 1]
                 ToggleButton:
-                    text: "On"
+                    text: "ON"
+                    bold: True
+                    id: p3on
+                    on_press: root.pump(*args)
                     group: 'p3Status'
                     disabled: True
                 ToggleButton:
-                    text: "Off"
+                    text: "OFF"
+                    bold: True
+                    id: p3off
+                    on_press: root.pump(*args)
                     group: 'p3Status'
                     disabled: True
 
         Button:
             text: "Back"
             size_hint: [1, 0.2]
-            on_press: app.root.current = 'graph'
+            on_press: root.get_config()
+            on_release: app.root.current = 'graph'
