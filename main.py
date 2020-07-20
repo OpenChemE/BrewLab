@@ -8,6 +8,7 @@ import serial
 import os
 import datetime
 from functools import partial
+import concurrent.futures
 
 from brewlab.user import init_df
 from brewlab.connections import setup, activateArd, get_data
@@ -51,6 +52,21 @@ class MenuScreen(Screen):
         for ferm in fermenters:
             activateArd(ferm)
 
+class ConfigScreen(Screen):
+
+    def __init__(self, **kwargs):
+        super(ConfigScreen, self).__init__(**kwargs)
+
+    def on_pre_enter(self, **kwargs):
+        self.ids.f1Temp.value = fermenters[0].temp
+        self.ids.f2Temp.value = fermenters[1].temp
+        self.ids.f3Temp.value = fermenters[2].temp
+
+        if fermenters[0].auto is True:
+            self.ids.ferm1Auto.state = "down"
+        else:
+            self.ids.ferm1Man.state = "down"
+
 class MyScreenManager(ScreenManager):
     pass
 
@@ -61,7 +77,7 @@ class GraphScreen(Screen):
         self.tempplot = MeshLinePlot(color=[1, 0, 0, 1])
         self.pHplot = MeshLinePlot(color=[1, 0, 0, 1])
         self.DOplot = MeshLinePlot(color=[1, 0, 0, 1])
-        self.level = []
+
         self._num_data_points = num_data_points
         self.xmin = 0
         self.xmax = num_data_points
@@ -80,8 +96,8 @@ class GraphScreen(Screen):
 
         self.ids.start.disabled = True
 
-        Clock.schedule_interval(self.get_value, SAMPLING_RATE)
         Clock.schedule_interval(self.main_callback, SAMPLING_RATE)
+        Clock.schedule_interval(self.get_value, SAMPLING_RATE)
 
     def stop(self):
         try:
@@ -101,9 +117,6 @@ class GraphScreen(Screen):
         elif button.group == "fermenter" and state == "down":
             self.fermenter = button.text
 
-        print(self.range)
-        print(self.fermenter)
-
     def get_value(self, dt):
         self.tempplot.points = [(i, j) for i, j in enumerate(
             self.df[self.fermenter]['Temp (C)'])]
@@ -114,13 +127,16 @@ class GraphScreen(Screen):
         self.DOplot.points = [(i, j) for i, j in enumerate(
             self.df[self.fermenter]['DO (mg/L)'])]
 
-        self.tempplot.ymax = max(self.level)
-        self.pHplot.ymax = max(self.level)
-        self.DOplot.ymax = max(self.level)
+        self.tempplot.ymax = max(self.df[self.fermenter]['Temp (C)'])
+        self.pHplot.ymax = max(self.df[self.fermenter]['pH'])
+        self.DOplot.ymax = max(self.df[self.fermenter]['DO (mg/L)'])
 
 class BrewLabApp(App):
     pass
 
 if __name__ == '__main__':
-    fermenters = setup()
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(setup)
+        fermenters = future.result()
+
     BrewLabApp().run()

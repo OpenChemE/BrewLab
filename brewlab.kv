@@ -5,6 +5,7 @@ MyScreenManager:
     transition: FadeTransition()
     MenuScreen:
     GraphScreen:
+    ConfigScreen:
 
 <MenuScreen>:
     name: 'menu'
@@ -122,6 +123,7 @@ MyScreenManager:
                     text: "Config"
                     id: config
                     bold: True
+                    on_press: app.root.current = 'config'
             BoxLayout:
                 orientation: 'vertical'
                 ToggleButton:
@@ -157,3 +159,129 @@ MyScreenManager:
                 bold: True
                 on_press: root.stop()
                 on_release: app.root.current = 'menu'
+
+<ConfigScreen>:
+    name: "config"
+
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: "[b][size=48]Settings[/size][/b]"
+            markup: True
+            size_hint: [1, 0.3]
+        GridLayout:
+            cols: 4
+            rows: 3
+            size_hint: [1, 0.5]
+            Label:
+                text: "[size=24]Fermenter 1[/size]"
+                markup: True
+                size_hint: [0.4, 1]
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: [0.3, 1]
+                ToggleButton:
+                    text: "Auto"
+                    id: ferm1Auto
+                    group: 'f1Config'
+                ToggleButton:
+                    text: "Manual"
+                    id: ferm1Man
+                    group: 'f1Config'
+            BoxLayout:
+                Slider:
+                    id: f1Temp
+                    min: 4
+                    value: 18.0
+                    max: 23
+                    step: 0.5
+                Label:
+                    text: str(f1Temp.value)
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: [0.3, 1]
+                ToggleButton:
+                    text: "On"
+                    group: 'p1Status'
+                    disabled: True
+                ToggleButton:
+                    text: "Off"
+                    group: 'p1Status'
+                    disabled: True
+
+            Label:
+                text: "[size=24]Fermenter 2[/size]"
+                markup: True
+                size_hint: [0.4, 1]
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: [0.3, 1]
+                ToggleButton:
+                    text: "Auto"
+                    id: ferm2Auto
+                    group: 'f2Config'
+                ToggleButton:
+                    text: "Manual"
+                    id: ferm2Man
+                    group: 'f2Config'
+            BoxLayout:
+                Slider:
+                    id: f2Temp
+                    min: 4
+                    value: 18.0
+                    max: 23
+                    step: 0.5
+                Label:
+                    text: str(f2Temp.value)
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: [0.3, 1]
+                ToggleButton:
+                    text: "On"
+                    group: 'p2Status'
+                    disabled: True
+                ToggleButton:
+                    text: "Off"
+                    group: 'p2Status'
+                    disabled: True
+
+            Label:
+                text: "[size=24]Fermenter 3[/size]"
+                markup: True
+                size_hint: [0.4, 1]
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: [0.3, 1]
+                ToggleButton:
+                    text: "Auto"
+                    id: ferm3Auto
+                    group: 'f3Config'
+                ToggleButton:
+                    text: "Manual"
+                    id: ferm3Man
+                    group: 'f3Config'
+            BoxLayout:
+                Slider:
+                    id: f3Temp
+                    min: 4
+                    value: 18.0
+                    max: 23
+                    step: 0.5
+                Label:
+                    text: str(f3Temp.value)
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: [0.3, 1]
+                ToggleButton:
+                    text: "On"
+                    group: 'p3Status'
+                    disabled: True
+                ToggleButton:
+                    text: "Off"
+                    group: 'p3Status'
+                    disabled: True
+
+        Button:
+            text: "Back"
+            size_hint: [1, 0.2]
+            on_press: app.root.current = 'graph'
