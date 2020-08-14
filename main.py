@@ -9,6 +9,7 @@ import os
 import datetime
 from functools import partial
 import concurrent.futures
+from kivy.logger import Logger
 
 from brewlab.user import init_df
 from brewlab.connections import setup, activateArd, get_data
@@ -18,17 +19,6 @@ if os.environ.get("MODE") == "dev":
     from brewlab import fakeSerial as serial
 
 SAMPLING_RATE = 5
-
-def callback(df, filename, *largs):
-    for ferm in fermenters:
-        if ferm.active is True:
-            row = get_data(ferm.id, ferm.serialCon)
-            fermControl(ferm.serialCon, ferm.temp, row[3], ferm.auto)
-
-            timestamp = datetime.datetime.now()
-            df.loc[timestamp, ferm.name] = row
-
-    df.to_csv(filename)
 
 class MenuScreen(Screen):
 
@@ -141,17 +131,23 @@ class ConfigScreen(Screen):
         button = args[0]
 
         if button.group == "p1Status" and button.text == "ON":
-            fermenters[0].serialCon.write('PT')
+            fermenters[0].serialCon.write('PT'.encode())
+            Logger.info("Pump: Turning on Pump 1")
         elif button.group == "p2Status" and button.text == "ON":
-            fermenters[1].serialCon.write('PT')
+            fermenters[1].serialCon.write('PT'.encode())
+            Logger.info("Pump: Turning on Pump 2")
         elif button.group == "p3Status" and button.text == "ON":
-            fermenters[2].serialCon.write('PT')
+            fermenters[2].serialCon.write('PT'.encode())
+            Logger.info("Pump: Turning on Pump 3")
         elif button.group == "p1Status":
-            fermenters[0].serialCon.write('PF')
+            fermenters[0].serialCon.write('PF'.encode())
+            Logger.info("Pump: Turning off Pump 1")
         elif button.group == "p1Status":
-            fermenters[1].serialCon.write('PF')
+            fermenters[1].serialCon.write('PF'.encode())
+            Logger.info("Pump: Turning off Pump 2")
         elif button.group == "p1Status":
-            fermenters[2].serialCon.write('PF')
+            fermenters[2].serialCon.write('PF'.encode())
+            Logger.info("Pump: Turning off Pump 3")
 
     def get_config(self):
         fermenters[0] = fermenters[0]._replace(temp=self.ids.f1Temp.value)
@@ -169,6 +165,8 @@ class GraphScreen(Screen):
         self.pHplot = MeshLinePlot(color=[1, 0, 0, 1])
         self.DOplot = MeshLinePlot(color=[1, 0, 0, 1])
 
+        self.iter = 0
+        
         self._num_data_points = num_data_points
         self.xmin = 0
         self.xmax = num_data_points
@@ -176,17 +174,33 @@ class GraphScreen(Screen):
         self.range = '1 Day'
         self.fermenter = 'Fermenter 1'
 
+    def callback(self, iter, df, filename, *largs):
+        for ferm in fermenters:
+            if ferm.active is True:
+                row = get_data(ferm.id, ferm.serialCon)
+
+                if row is not None:
+                    fermControl(ferm.serialCon, ferm.temp, row[3], ferm.auto)
+
+                    row[0] = datetime.datetime.now()
+                    df.loc[self.iter, ferm.name] = row
+
+        self.iter += 1
+        df.to_csv(filename)
+
     def start(self):
         self.ids.temp.add_plot(self.tempplot)
         self.ids.pH.add_plot(self.pHplot)
         self.ids.DO.add_plot(self.DOplot)
+        self.iter = 0
 
         df, filename = init_df()
-        self.main_callback = partial(callback, df, filename)
+        self.main_callback = partial(self.callback, self.iter, df, filename)
         self.df = df
 
         self.ids.start.disabled = True
 
+        Logger.info("App: Starting data collection . . .")
         Clock.schedule_interval(self.main_callback, SAMPLING_RATE)
         Clock.schedule_interval(self.get_value, SAMPLING_RATE)
 
@@ -194,6 +208,7 @@ class GraphScreen(Screen):
         try:
             Clock.unschedule(self.get_value)
             Clock.unschedule(self.main_callback)
+            Logger.info("App: Stopping data collection")
         except AttributeError:
             pass
         finally:
@@ -218,9 +233,12 @@ class GraphScreen(Screen):
         self.DOplot.points = [(i, j) for i, j in enumerate(
             self.df[self.fermenter]['DO (mg/L)'])]
 
-        self.tempplot.ymax = max(self.df[self.fermenter]['Temp (C)'])
-        self.pHplot.ymax = max(self.df[self.fermenter]['pH'])
-        self.DOplot.ymax = max(self.df[self.fermenter]['DO (mg/L)'])
+        if self.tempplot.points:
+            self.tempplot.ymax = max(self.df[self.fermenter]['Temp (C)'])
+        if self.pHplot.points:
+            self.pHplot.ymax = max(self.df[self.fermenter]['pH'])
+        if self.DOplot.points:
+            self.DOplot.ymax = max(self.df[self.fermenter]['DO (mg/L)'])
 
 class BrewLabApp(App):
     pass

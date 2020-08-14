@@ -4,6 +4,7 @@ import os
 import sys
 from collections import namedtuple
 from numpy import NaN
+from kivy.logger import Logger
 
 if os.environ.get("MODE") == "dev":
     from brewlab import fakeSerial as serial
@@ -27,18 +28,18 @@ COM3 = 'COM5'
 
 # Connects to Arduino and prints hello to confirm connection
 def ardCon(COM_NUM):
-    print ("Connecting to Arduino\n")
+    Logger.info("App: Connecting to Arduino")
     try:
         ser = serial.Serial(COM_NUM, 9600, timeout=0) # Establish the connection on specified COM port
         sleep(2)
-        ser.write("Hello")
+        ser.write("Hello".encode())
         sleep(5)
-        reply = ser.readline()
-        print(reply.strip('\n'))
-    except AttributeError as e:
 
-        print(e)
-        print ("No connection to Arduino, terminating program")
+        reply = ser.readline().decode()
+        Logger.info("App: Connection established")
+    except AttributeError as e:
+        Logger.warning("App: Got AttributeError: {}".format(e))
+        Logger.critical("App: No connection to Arduino, terminating program")
         sys.exit()
     return ser
 
@@ -75,10 +76,10 @@ def setup():
 
 def activateArd(fermenter):
     if fermenter.active is True:
-        fermenter.serialCon.write('1')
+        fermenter.serialCon.write('1'.encode())
         sleep(0.1)
     else:
-        fermenter.serialCon.write('0')
+        fermenter.serialCon.write('0'.encode())
         sleep(0.1)
 
 def get_data(fermenter, serialCon):
@@ -89,15 +90,15 @@ def get_data(fermenter, serialCon):
     tflag = False
     Tflag = False
 
-    serialCon.write('F')  # Let arduino know to send fermenter data
+    serialCon.write('F'.encode())  # Let arduino know to send fermenter data
     sleep(0.5)
-    data = serialCon.readline()  # Readline from buffer and remove newline
+    data = serialCon.readline().decode().strip('\n')  # Readline from buffer and remove newline
 
     if (str(data[0:2]) == fermenter):
         sleep(0.1)
         count = 0  # Reset counter for data collection
         while (count < 4):  # While all data has not been collected
-            data = serialCon.readline()  # Readline from buffer and remove newline
+            data = serialCon.readline().decode().strip('\n')  # Readline from buffer and remove newline
 
             if (str(data[0:2]) =="ti" and tflag == False):
                 time_1 = float(data[2:])
@@ -116,8 +117,9 @@ def get_data(fermenter, serialCon):
                         ph_1 = float(data[(x-1):].strip('\r'))
                     else:
                         ph_1 = float(data[2:].strip('\r'))
-                except:
-                    ph_1 = len(PH1) - 1
+                except Exception as e:
+                    Logger.warning("App: Caught exception: {}".format(e))
+                    ph_1 = NaN
 
                 count += 1
                 PHflag = True
