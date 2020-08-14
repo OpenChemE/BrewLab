@@ -13,9 +13,17 @@ of pumps attached to the fermenters
 
 ## Development
 
+### macOS\Linux
 1. Create a new virtual environment: `virtualenv --python=`which python3` env`
 2. Activate the virtual environment: source env/bin/activate
 3. Install the package in development mode: `python setup.py develop`
+4. Run `garden install graph`
+
+### Windows
+1. Create a new virtual environment: `virtualenv --python=`which python3` env`
+2. Activate the virtual environment: `env\Scripts\activate`
+3. Install the package in development mode: `python setup.py develop`
+4. Run `garden install graph`
 
 If you don't have an Arduino to connect to for testing set enviroment variable **MODE** to "dev".
 

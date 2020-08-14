@@ -16,6 +16,7 @@ setup(
         'kivy_deps.sdl2 == 0.1.*',
         'kivy_deps.glew == 0.1.*',
         'kivy_deps.gstreamer == 0.1.*',
-        'kivy == 1.11.1'
+        'kivy == 1.11.1',
+        'kivy-garden == 0.1.4'
     ],
 )
