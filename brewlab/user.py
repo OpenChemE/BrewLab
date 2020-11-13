@@ -22,6 +22,9 @@ MULTI_COLUMN_LAYOUT = [
 ]
 
 def init_df():
+    """
+    Initializes dataframe and gives app the filename
+    """
     df = pd.DataFrame(columns=MULTI_COLUMN_LAYOUT)
 
     today = datetime.date.today()
@@ -31,6 +34,9 @@ def init_df():
 
 
 def resample_data(filename, timeframe):
+    """
+    Reads data from the CSV and formats it to the users request. 
+    """
 
     # Read data from generated csv
     df = pd.read_csv(filename, index_col=0,

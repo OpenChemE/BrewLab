@@ -27,8 +27,10 @@ COM1 = 'COM3'
 COM2 = 'COM4'
 COM3 = 'COM5'
 
-# Connects to Arduino and prints hello to confirm connection
 def ardCon(COM_NUM):
+    """
+    Connects to Arduino and prints hello to confirm connection
+    """
     Logger.info("App: Connecting to Arduino")
     try:
         ser = serial.Serial(COM_NUM, 9600, timeout=0) # Establish the connection on specified COM port
@@ -44,8 +46,10 @@ def ardCon(COM_NUM):
         sys.exit()
     return ser
 
-# Connect to Arduinos and return list of fermenter objects
 def setup():
+    """
+    Connect to arduinos and return list of fermenter objects
+    """
     ferm1 = Fermenter(
         id='F1',
         name='Fermenter 1',
@@ -76,6 +80,9 @@ def setup():
     return [ferm1, ferm2, ferm3]
 
 def activateArd(fermenter):
+    """
+    Activates Arduino during setup
+    """
     if fermenter.active is True:
         fermenter.serialCon.write('1'.encode())
         sleep(0.1)
@@ -84,8 +91,11 @@ def activateArd(fermenter):
         sleep(0.1)
 
 def get_data(fermenter, serialCon):
+    """
+    Retrieves and parses data from Arduino.
 
-    # Logic adapted from CHBREWERY V4.py written by Thanos Kritharis
+    Logic adapted from CHBREWERY V4.py written by Thanos Kritharis
+    """
 
     # Define flags
     PHflag = False
