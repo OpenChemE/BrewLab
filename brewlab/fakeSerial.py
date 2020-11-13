@@ -1,3 +1,6 @@
+from numpy import random
+from kivy.logger import Logger
+
 # A very crude simulator for PySerial assuming it
 # is emulating an Arduino.
 
@@ -11,7 +14,6 @@ class Serial:
     def __init__( self, port='COM1', baudrate = 19200, timeout=1,
                   bytesize = 8, parity = 'N', stopbits = 1, xonxoff=0,
                   rtscts = 0):
-        self.name     = port
         self.port     = port
         self.timeout  = timeout
         self.parity   = parity
@@ -22,7 +24,14 @@ class Serial:
         self.rtscts   = rtscts
         self._isOpen  = True
         self._receivedData = ""
-        self._data = "start\nF1\nti1\nTe21\nDO13\nPH7.1\n"
+        self._data = "start\n"
+
+        if self.port == "COM3":
+            self.name = "F1"
+        elif self.port == "COM4":
+            self.name = "F2"
+        elif self.port == "COM5":
+            self.name = "F3"
 
     ## isOpen()
     # returns True if the port to the Arduino is open.  False otherwise
@@ -34,6 +43,10 @@ class Serial:
     def open( self ):
         self._isOpen = True
 
+    def mkdata(self):
+        x = str(random.randint(100))
+        return self.name + "\nti" + x + "\nTe" + x + "\nDO" + x + "\nPH" + x + "\n"
+
     ## close()
     # closes the port
     def close( self ):
@@ -42,8 +55,8 @@ class Serial:
     ## write()
     # writes a string of characters to the Arduino
     def write( self, string ):
-        print( 'Arduino got: "' + string + '"' )
-        self._receivedData += string
+        Logger.info('Arduino ' + self.name + ': Got: "' + string.decode() + '"' )
+        self._receivedData += string.decode()
 
     ## read()
     # reads n characters from the fake Arduino. Actually n characters
@@ -58,12 +71,12 @@ class Serial:
     # reads characters from the fake Arduino until a \n is found.
     def readline( self ):
         returnIndex = self._data.index( "\n" )
-        self._data += "F1\nti1\nTe21\nDO13\nPH7.1\n"
+        self._data += self.mkdata()
 
         if returnIndex != -1:
             s = self._data[0:returnIndex+1]
             self._data = self._data[returnIndex+1:]
-            return s
+            return s.encode()
         else:
             return ""
 

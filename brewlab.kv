@@ -137,6 +137,14 @@ MyScreenManager:
                 ToggleButton:
                     text: '1 Day'
                     group: 'time'
+                    on_state: root.press(*args)
+                ToggleButton:
+                    text: '1 Hour'
+                    group: 'time'
+                    on_state: root.press(*args)
+                ToggleButton:
+                    text: '5 Minutes'
+                    group: 'time'
                     state: 'down'
                     on_state: root.press(*args)
             BoxLayout:

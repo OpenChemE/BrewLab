@@ -1,7 +1,5 @@
 # BrewLab
 
-Original Author: Thanos Kritharis
-
 This program communicates with 3 Arduino Megas for the purpose of gathering 
 temperature, PH, and DO data from a batch fermenation process
 
@@ -25,7 +23,10 @@ of pumps attached to the fermenters
 3. Install the package in development mode: `python setup.py develop`
 4. Run `garden install graph`
 
-If you don't have an Arduino to connect to for testing set enviroment variable **MODE** to "dev".
+If you don't have an Arduino to connect to for testing set enviroment variable **MODE** to "dev"
+
+### Windows
+`set MODE=dev`
 
 ## Usage
 

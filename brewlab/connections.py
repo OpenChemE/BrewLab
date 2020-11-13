@@ -2,6 +2,7 @@ import serial
 from time import sleep
 import os
 import sys
+import pandas as pd
 from collections import namedtuple
 from numpy import NaN
 from kivy.logger import Logger
@@ -12,12 +13,12 @@ if os.environ.get("MODE") == "dev":
 Fermenter = namedtuple(
     'Fermenter',
     [
-        'id',
-        'name',
-        'active',
-        'auto',
-        'temp',
-        'serialCon'
+        'id',       # The ID of the fermenter ie: F1
+        'name',     # The full name of the fermenter
+        'active',   # True when data is being collected
+        'auto',     # True unless manual control is enabled
+        'temp',     # Float value of temperature setpoint
+        'serialCon' # Arduino Serial Connection
     ]
 )
 
@@ -43,7 +44,7 @@ def ardCon(COM_NUM):
         sys.exit()
     return ser
 
-
+# Connect to Arduinos and return list of fermenter objects
 def setup():
     ferm1 = Fermenter(
         id='F1',
@@ -84,13 +85,16 @@ def activateArd(fermenter):
 
 def get_data(fermenter, serialCon):
 
+    # Logic adapted from CHBREWERY V4.py written by Thanos Kritharis
+
     # Define flags
     PHflag = False
     DOflag = False
     tflag = False
     Tflag = False
 
-    serialCon.write('F'.encode())  # Let arduino know to send fermenter data
+    # Let arduino know to send fermenter data
+    serialCon.write('F'.encode())
     sleep(0.5)
     data = serialCon.readline().decode().strip('\n')  # Readline from buffer and remove newline
 

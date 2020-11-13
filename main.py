@@ -11,11 +11,12 @@ from functools import partial
 import concurrent.futures
 from kivy.logger import Logger
 
-from brewlab.user import init_df
+from brewlab.user import init_df, resample_data
 from brewlab.connections import setup, activateArd, get_data
 from brewlab.control import fermControl
 
 if os.environ.get("MODE") == "dev":
+    Logger.warning("App: Activating development mode...")
     from brewlab import fakeSerial as serial
 
 SAMPLING_RATE = 5
@@ -159,7 +160,7 @@ class MyScreenManager(ScreenManager):
 
 class GraphScreen(Screen):
 
-    def __init__(self, num_data_points=50, **kwargs):
+    def __init__(self, num_data_points=100, **kwargs):
         super(GraphScreen, self).__init__()
         self.tempplot = MeshLinePlot(color=[1, 0, 0, 1])
         self.pHplot = MeshLinePlot(color=[1, 0, 0, 1])
@@ -171,19 +172,25 @@ class GraphScreen(Screen):
         self.xmin = 0
         self.xmax = num_data_points
 
-        self.range = '1 Day'
+        self.range = '5 Minutes'
         self.fermenter = 'Fermenter 1'
 
     def callback(self, iter, df, filename, *largs):
+
+        # Timestamp represents the time when data is requested
+        timestamp = datetime.datetime.now()
+
         for ferm in fermenters:
             if ferm.active is True:
+                # Request data from fermenter
                 row = get_data(ferm.id, ferm.serialCon)
 
+                # When all data is collected proceed
                 if row is not None:
                     fermControl(ferm.serialCon, ferm.temp, row[3], ferm.auto)
 
                     row[0] = datetime.datetime.now()
-                    df.loc[self.iter, ferm.name] = row
+                    df.loc[timestamp, ferm.name] = row
 
         self.iter += 1
         df.to_csv(filename)
@@ -196,7 +203,8 @@ class GraphScreen(Screen):
 
         df, filename = init_df()
         self.main_callback = partial(self.callback, self.iter, df, filename)
-        self.df = df
+
+        self.filename = filename
 
         self.ids.start.disabled = True
 
@@ -222,23 +230,28 @@ class GraphScreen(Screen):
             self.range = button.text
         elif button.group == "fermenter" and state == "down":
             self.fermenter = button.text
+        
+        self.get_value(SAMPLING_RATE)
 
     def get_value(self, dt):
+
+        df = resample_data(self.filename, self.range)
+
         self.tempplot.points = [(i, j) for i, j in enumerate(
-            self.df[self.fermenter]['Temp (C)'])]
+            df[self.fermenter]['Temp (C)'])]
 
         self.pHplot.points = [(i, j) for i, j in enumerate(
-            self.df[self.fermenter]['pH'])]
+            df[self.fermenter]['pH'])]
 
         self.DOplot.points = [(i, j) for i, j in enumerate(
-            self.df[self.fermenter]['DO (mg/L)'])]
+            df[self.fermenter]['DO (mg/L)'])]
 
         if self.tempplot.points:
-            self.tempplot.ymax = max(self.df[self.fermenter]['Temp (C)'])
+            self.tempplot.ymax = max(df[self.fermenter]['Temp (C)'])
         if self.pHplot.points:
-            self.pHplot.ymax = max(self.df[self.fermenter]['pH'])
+            self.pHplot.ymax = max(df[self.fermenter]['pH'])
         if self.DOplot.points:
-            self.DOplot.ymax = max(self.df[self.fermenter]['DO (mg/L)'])
+            self.DOplot.ymax = max(df[self.fermenter]['DO (mg/L)'])
 
 class BrewLabApp(App):
     pass
