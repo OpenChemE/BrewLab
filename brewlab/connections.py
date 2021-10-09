@@ -33,7 +33,7 @@ def ardCon(COM_NUM):
     """
     Logger.info("App: Connecting to Arduino")
     try:
-        ser = serial.Serial(COM_NUM, 9600, timeout=0) # Establish the connection on specified COM port
+        ser = serial.Serial(COM_NUM, 9600, timeout=10) # Establish the connection on specified COM port
         sleep(2)
         ser.write("Hello".encode())
         sleep(5)
@@ -132,7 +132,7 @@ def get_data(fermenter, serialCon):
                     else:
                         ph_1 = float(data[2:].strip('\r'))
                 except Exception as e:
-                    Logger.warning("App: Caught exception: {}".format(e))
+                    Logger.warning("{}: Caught exception for pH probe: {}".format(fermenter, e))
                     ph_1 = NaN
 
                 count += 1
@@ -141,8 +141,9 @@ def get_data(fermenter, serialCon):
             if (str(data[0:2]) == "DO" and DOflag == False):
                 try:
                     do_1 = float(data[2:])
-                except:
-                    do_1 = 0
+                except Exception as e:
+                    Logger.warning("{}: Caught exception for DO probe: {}".format(fermenter, e))
+                    do_1 = None
                 count += 1
                 DOflag = True
             

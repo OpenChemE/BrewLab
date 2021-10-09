@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 import numpy as np
 from kivy.app import App
-from kivy.garden.graph import MeshLinePlot
+from kivy.garden.graph import Graph,MeshLinePlot
 from kivy.clock import Clock
 from collections import namedtuple
 import serial
@@ -9,6 +9,7 @@ import os
 import datetime
 from functools import partial
 import concurrent.futures
+import threading
 from kivy.logger import Logger
 
 from brewlab.user import init_df, resample_data
@@ -19,7 +20,7 @@ if os.environ.get("MODE") == "dev":
     Logger.warning("App: Activating development mode...")
     from brewlab import fakeSerial as serial
 
-SAMPLING_RATE = 5
+SAMPLING_RATE = 10
 
 class MenuScreen(Screen):
     """
@@ -161,10 +162,10 @@ class ConfigScreen(Screen):
         elif button.group == "p1Status":
             fermenters[0].serialCon.write('PF'.encode())
             Logger.info("Pump: Turning off Pump 1")
-        elif button.group == "p1Status":
+        elif button.group == "p2Status":
             fermenters[1].serialCon.write('PF'.encode())
             Logger.info("Pump: Turning off Pump 2")
-        elif button.group == "p1Status":
+        elif button.group == "p3Status":
             fermenters[2].serialCon.write('PF'.encode())
             Logger.info("Pump: Turning off Pump 3")
 
@@ -216,10 +217,13 @@ class GraphScreen(Screen):
 
                 # When all data is collected proceed
                 if row is not None:
-                    fermControl(ferm.serialCon, ferm.temp, row[3], ferm.auto)
 
-                    row[0] = datetime.datetime.now()
-                    df.loc[timestamp, ferm.name] = row
+                    # Need to reorder the row to fit the dataframe
+                    _, ph, do, temp = row
+                    fermControl(ferm.serialCon, ferm.temp, temp, ferm.auto)
+
+                    time = datetime.datetime.now()
+                    df.loc[timestamp, ferm.name] = [time, temp, ph, do]
 
         df.to_csv(filename)
 
@@ -240,7 +244,7 @@ class GraphScreen(Screen):
 
         Logger.info("App: Starting data collection . . .")
         Clock.schedule_interval(self.main_callback, SAMPLING_RATE)
-        Clock.schedule_interval(self.get_value, SAMPLING_RATE)
+        Clock.schedule_interval(self.get_value, SAMPLING_RATE*2)
 
     def stop(self):
         """
