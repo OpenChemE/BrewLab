@@ -41,4 +41,4 @@ If you don't have an Arduino to connect to for testing set enviroment variable *
 
 ## Future Work
 
-For future development see Issues.
+For future development see [Issues](https://github.com/OpenChemE/BrewLab/issues).
