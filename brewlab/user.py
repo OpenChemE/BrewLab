@@ -28,7 +28,15 @@ def init_df():
     df = pd.DataFrame(columns=MULTI_COLUMN_LAYOUT)
 
     today = datetime.date.today()
-    filename = "data/" + str(today)+ "_data.csv"
+    path = "data/" + str(today)+ "/"
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    num = len(os.listdir(path)) + 1
+    filename = "data/" + str(today)+ "/" + "run_{}".format(num) + "_data.csv"
+
+    df.to_csv(filename)
 
     return df, filename
 
