@@ -30,7 +30,6 @@ char ezo_answer[EZO_ANSWER_LENGTH]; // A 32 byte character array to hold incomin
 
 String message = "";
 char inByte;
-int status;
 
 // Fermenter Status
 bool F1;
@@ -38,9 +37,9 @@ bool F2;
 bool F3;
 
 // Relay Pins
-int P1 = 39;
-int P2 = 40;
-int P3 = 41;
+int P1 = 7;
+int P2 = 8;
+int P3 = 9;
 
 int pumps [] = {P1, P2, P3 };
 
@@ -134,7 +133,6 @@ void loop(){
   }
 
   message.remove(0); //delete message
-  delay(1000);
 }
 
 // request answer from an EZO device
@@ -144,7 +142,7 @@ void get_reading(const int address){
   Wire.write("r");
   Wire.endTransmission();
 
-  delay(1000);
+  delay(900);
 
   byte sensor_bytes_received = 0;
   byte code = 0;
@@ -191,9 +189,7 @@ void get_reading(const int address){
 bool get_fermenter_status(){  
   while (!Serial.available()){} 
   inByte = Serial.read();
-  status = int(inByte); 
-
-  if (status == 1) {
+  if (inByte != '0') {
     return true;
   } else {
     return false;

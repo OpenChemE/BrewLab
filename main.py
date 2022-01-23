@@ -13,7 +13,7 @@ import threading
 from kivy.logger import Logger
 
 from brewlab.user import init_df, resample_data
-from brewlab.connections import setup, activateArd, get_data
+from brewlab.connections import ardCon, setup, activateArd, get_data
 from brewlab.control import fermControl
 
 if os.environ.get("MODE") == "dev":
@@ -38,16 +38,23 @@ class MenuScreen(Screen):
         if self.ids.ferm1.state is "down":
             fermenters[0] = fermenters[0]._replace(
                 active=True, temp=self.ids.f1Temp.value)
+            SERIAL_CON.write('1'.encode())
+        else: 
+            SERIAL_CON.write('0'.encode())
 
         if self.ids.ferm2.state is "down":
             fermenters[1] = fermenters[1]._replace(
                 active=True, temp=self.ids.f2Temp.value)
+            SERIAL_CON.write('1'.encode())
+        else:
+            SERIAL_CON.write('0'.encode())
 
         if self.ids.ferm3.state is "down":
             fermenters[2] = fermenters[2]._replace(
                 active=True, temp=self.ids.f3Temp.value)
-
-        activateArd()
+            SERIAL_CON.write('1'.encode())
+        else:
+            SERIAL_CON.write('0'.encode())
 
 class ConfigScreen(Screen):
     """
@@ -150,22 +157,22 @@ class ConfigScreen(Screen):
         button = args[0]
 
         if button.group == "p1Status" and button.text == "ON":
-            serialCon.write('PT1'.encode())
+            SERIAL_CON.write('PT1'.encode())
             Logger.info("Pump: Turning on Pump 1")
         elif button.group == "p2Status" and button.text == "ON":
-            serialCon.write('PT2'.encode())
+            SERIAL_CON.write('PT2'.encode())
             Logger.info("Pump: Turning on Pump 2")
         elif button.group == "p3Status" and button.text == "ON":
-            serialCon.write('PT3'.encode())
+            SERIAL_CON.write('PT3'.encode())
             Logger.info("Pump: Turning on Pump 3")
         elif button.group == "p1Status":
-            serialCon.write('PF1'.encode())
+            SERIAL_CON.write('PF1'.encode())
             Logger.info("Pump: Turning off Pump 1")
         elif button.group == "p2Status":
-            serialCon.write('PF2'.encode())
+            SERIAL_CON.write('PF2'.encode())
             Logger.info("Pump: Turning off Pump 2")
         elif button.group == "p3Status":
-            serialCon.write('PF3'.encode())
+            SERIAL_CON.write('PF3'.encode())
             Logger.info("Pump: Turning off Pump 3")
 
     def get_config(self):
@@ -209,20 +216,22 @@ class GraphScreen(Screen):
         # Timestamp represents the time when data is requested
         timestamp = datetime.datetime.now()
 
+        row = get_data(SERIAL_CON)
+
+        # Need to reorder the row to fit the dataframe
         for ferm in fermenters:
-            if ferm.active is True:
-                # Request data from fermenter
-                row = get_data(ferm.id, ferm.serialCon)
+            if ferm.active:
+                i = 0
+                temp = row[i]
+                ph = row[i+1]
+                do = row[i+2]
 
-                # When all data is collected proceed
-                if row is not None:
+                fermControl(SERIAL_CON, ferm, temp)
 
-                    # Need to reorder the row to fit the dataframe
-                    _, ph, do, temp = row
-                    fermControl(ferm.id, ferm, temp)
+                time = datetime.datetime.now()
+                df.loc[timestamp, ferm.name] = [time, temp, ph, do]
 
-                    time = datetime.datetime.now()
-                    df.loc[timestamp, ferm.name] = [time, temp, ph, do]
+                i += 3
 
         df.to_csv(filename)
 
@@ -308,5 +317,7 @@ if __name__ == '__main__':
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(setup)
         fermenters = future.result()
+
+    SERIAL_CON = ardCon('COM4')
 
     BrewLabApp().run()

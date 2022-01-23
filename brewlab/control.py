@@ -31,8 +31,8 @@ def fermControl(serialCon, ferm, measured):
         # If measured temp is greater than setpoint (ferm.temp)
         # Turn on Pump
         if ferm.temp < measured:
-            command = get_on_command(ferm)
+            command = get_on_command(ferm.id)
             serialCon.write(command.encode())
         else:
-            command = get_on_command(ferm)
+            command = get_off_command(ferm.id)
             serialCon.write(command.encode())
