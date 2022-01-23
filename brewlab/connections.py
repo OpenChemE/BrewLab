@@ -18,16 +18,13 @@ Fermenter = namedtuple(
         'active',   # True when data is being collected
         'auto',     # True unless manual control is enabled
         'temp',     # Float value of temperature setpoint
-        'serialCon' # Arduino Serial Connection
     ]
 )
 
-# Begin communication with arduinos connected to the system
+# Begin communication with Arduino
 COM1 = 'COM3'
-COM2 = 'COM4'
-COM3 = 'COM5'
 
-def ardCon(COM_NUM):
+def ardCon(COM_NUM='COM3'):
     """
     Connects to Arduino and prints hello to confirm connection
     """
@@ -56,7 +53,6 @@ def setup():
         active=False,
         auto=True,
         temp=NaN,
-        serialCon=ardCon(COM1)
     )
 
     ferm2 = Fermenter(
@@ -65,7 +61,6 @@ def setup():
         active=False,
         auto=True,
         temp=NaN,
-        serialCon=ardCon(COM2)
     )
 
     ferm3 = Fermenter(
@@ -74,7 +69,6 @@ def setup():
         active=False,
         auto=True,
         temp=NaN,
-        serialCon=ardCon(COM3)
     )
 
     return [ferm1, ferm2, ferm3]
@@ -93,8 +87,6 @@ def activateArd(fermenter):
 def get_data(fermenter, serialCon):
     """
     Retrieves and parses data from Arduino.
-
-    Logic adapted from CHBREWERY V4.py written by Thanos Kritharis
     """
 
     # Define flags

@@ -47,8 +47,7 @@ class MenuScreen(Screen):
             fermenters[2] = fermenters[2]._replace(
                 active=True, temp=self.ids.f3Temp.value)
 
-        for ferm in fermenters:
-            activateArd(ferm)
+        activateArd()
 
 class ConfigScreen(Screen):
     """
@@ -151,22 +150,22 @@ class ConfigScreen(Screen):
         button = args[0]
 
         if button.group == "p1Status" and button.text == "ON":
-            fermenters[0].serialCon.write('PT'.encode())
+            serialCon.write('PT1'.encode())
             Logger.info("Pump: Turning on Pump 1")
         elif button.group == "p2Status" and button.text == "ON":
-            fermenters[1].serialCon.write('PT'.encode())
+            serialCon.write('PT2'.encode())
             Logger.info("Pump: Turning on Pump 2")
         elif button.group == "p3Status" and button.text == "ON":
-            fermenters[2].serialCon.write('PT'.encode())
+            serialCon.write('PT3'.encode())
             Logger.info("Pump: Turning on Pump 3")
         elif button.group == "p1Status":
-            fermenters[0].serialCon.write('PF'.encode())
+            serialCon.write('PF1'.encode())
             Logger.info("Pump: Turning off Pump 1")
         elif button.group == "p2Status":
-            fermenters[1].serialCon.write('PF'.encode())
+            serialCon.write('PF2'.encode())
             Logger.info("Pump: Turning off Pump 2")
         elif button.group == "p3Status":
-            fermenters[2].serialCon.write('PF'.encode())
+            serialCon.write('PF3'.encode())
             Logger.info("Pump: Turning off Pump 3")
 
     def get_config(self):
@@ -220,7 +219,7 @@ class GraphScreen(Screen):
 
                     # Need to reorder the row to fit the dataframe
                     _, ph, do, temp = row
-                    fermControl(ferm.serialCon, ferm.temp, temp, ferm.auto)
+                    fermControl(ferm.id, ferm, temp)
 
                     time = datetime.datetime.now()
                     df.loc[timestamp, ferm.name] = [time, temp, ph, do]
