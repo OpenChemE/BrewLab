@@ -47,24 +47,48 @@ def resample_data(filename, timeframe):
     """
 
     # Read data from generated csv
-    df = pd.read_csv(filename, index_col=0,
-                     header=[0, 1], parse_dates=True)
+    try:
+        df = pd.read_csv(filename, index_col=0,
+                         header=[0, 1], parse_dates=True)
+    except IndexError:
+        return None
 
-    # Each is approximately the timeframe divided by the max datapoints (100)
-    if timeframe == "1 Day":
-        rule = "15T"
-    elif timeframe == "3 Days":
-        rule = "45T"
-    elif timeframe == "7 Days":
+    """
+    Each is approximately the timeframe divided by the max datapoints (100)
+
+    Sample Calculations
+    -------------------
+    7 days * 24 hours / day * 60 min / hour / 100 = 100.8 minutes / point (floored to 100)
+    1 hour * 60 min / hr * 60 sec / min / 100 points = 36 seconds / point
+    5 minutes * 60 seconds / min / 100 points = 3 seconds / point 
+    """
+    
+    if timeframe == "7 Days":
         rule = "100T"
+        pad = False
+
+    elif timeframe == "3 Days":
+        rule = "43T"
+        pad = False
+
+    elif timeframe == "1 Day":
+        rule = "14T"
+        pad = False
+
     elif timeframe == "1 Hour":
         rule = "36S"
+        pad = True
     elif timeframe == "5 Minutes":
-        rule = "5S"
+        rule = "3S"
+        pad = True
     else:
-        rule = "5S"
+        rule = "3S"
+        pad = True
 
-    df = df.resample(rule).mean()
+    if pad:
+        df = df.resample(rule).pad()
+    else:
+        df = df.resample(rule).mean()
 
     # Make sure that we do not send a dataframe that is longer then what the window
     # will handle

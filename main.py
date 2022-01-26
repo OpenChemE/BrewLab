@@ -13,14 +13,18 @@ import threading
 from kivy.logger import Logger
 
 from brewlab.user import init_df, resample_data
-from brewlab.connections import ardCon, setup, activateArd, get_data
+from brewlab.connections import ardCon, setup, get_data
 from brewlab.control import fermControl
 
 if os.environ.get("MODE") == "dev":
     Logger.warning("App: Activating development mode...")
     from brewlab import fakeSerial as serial
 
-SAMPLING_RATE = 10
+"""
+If you change the sampling rate be sure to make changes to brewlab.user.resample_data()
+"""
+
+SAMPLING_RATE = 60
 
 class MenuScreen(Screen):
     """
@@ -84,14 +88,14 @@ class ConfigScreen(Screen):
             self.ids.ferm1Man.state = "down"
 
         if fermenters[1].auto is True:
-            self.ids.ferm1Auto.state = "down"
+            self.ids.ferm2Auto.state = "down"
         else:
-            self.ids.ferm1Man.state = "down"
+            self.ids.ferm2Man.state = "down"
 
         if fermenters[2].auto is True:
-            self.ids.ferm1Auto.state = "down"
+            self.ids.ferm3Auto.state = "down"
         else:
-            self.ids.ferm1Man.state = "down"
+            self.ids.ferm3Man.state = "down"
 
     def press(self, *args):
         """
@@ -290,6 +294,9 @@ class GraphScreen(Screen):
             return
 
         df = resample_data(self.filename, self.range)
+
+        if df is None:
+            return
 
         self.tempplot.points = [(i, j) for i, j in enumerate(
             df[self.fermenter]['Temp (C)'])]

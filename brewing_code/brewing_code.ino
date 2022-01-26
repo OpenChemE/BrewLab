@@ -41,8 +41,6 @@ int P1 = 7;
 int P2 = 8;
 int P3 = 9;
 
-int pumps [] = {P1, P2, P3 };
-
 errors i2c_error; // error-byte to store result of Wire.transmissionEnd()
 unsigned long next_receive_time;
 
