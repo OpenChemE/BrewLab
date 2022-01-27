@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 import numpy as np
 from kivy.app import App
-from kivy.garden.graph import MeshLinePlot
+from kivy.garden.graph import Graph,MeshLinePlot
 from kivy.clock import Clock
 from collections import namedtuple
 import serial
@@ -9,17 +9,18 @@ import os
 import datetime
 from functools import partial
 import concurrent.futures
+import threading
 from kivy.logger import Logger
 
 from brewlab.user import init_df, resample_data
-from brewlab.connections import setup, activateArd, get_data
+from brewlab.connections import ardCon, setup, get_data
 from brewlab.control import fermControl
 
 if os.environ.get("MODE") == "dev":
     Logger.warning("App: Activating development mode...")
     from brewlab import fakeSerial as serial
 
-SAMPLING_RATE = 5
+SAMPLING_RATE = 60
 
 class MenuScreen(Screen):
     """
@@ -37,17 +38,23 @@ class MenuScreen(Screen):
         if self.ids.ferm1.state is "down":
             fermenters[0] = fermenters[0]._replace(
                 active=True, temp=self.ids.f1Temp.value)
+            SERIAL_CON.write('1'.encode())
+        else: 
+            SERIAL_CON.write('0'.encode())
 
         if self.ids.ferm2.state is "down":
             fermenters[1] = fermenters[1]._replace(
                 active=True, temp=self.ids.f2Temp.value)
+            SERIAL_CON.write('1'.encode())
+        else:
+            SERIAL_CON.write('0'.encode())
 
         if self.ids.ferm3.state is "down":
             fermenters[2] = fermenters[2]._replace(
                 active=True, temp=self.ids.f3Temp.value)
-
-        for ferm in fermenters:
-            activateArd(ferm)
+            SERIAL_CON.write('1'.encode())
+        else:
+            SERIAL_CON.write('0'.encode())
 
 class ConfigScreen(Screen):
     """
@@ -77,14 +84,14 @@ class ConfigScreen(Screen):
             self.ids.ferm1Man.state = "down"
 
         if fermenters[1].auto is True:
-            self.ids.ferm1Auto.state = "down"
+            self.ids.ferm2Auto.state = "down"
         else:
-            self.ids.ferm1Man.state = "down"
+            self.ids.ferm2Man.state = "down"
 
         if fermenters[2].auto is True:
-            self.ids.ferm1Auto.state = "down"
+            self.ids.ferm3Auto.state = "down"
         else:
-            self.ids.ferm1Man.state = "down"
+            self.ids.ferm3Man.state = "down"
 
     def press(self, *args):
         """
@@ -150,22 +157,22 @@ class ConfigScreen(Screen):
         button = args[0]
 
         if button.group == "p1Status" and button.text == "ON":
-            fermenters[0].serialCon.write('PT'.encode())
+            SERIAL_CON.write('PT1'.encode())
             Logger.info("Pump: Turning on Pump 1")
         elif button.group == "p2Status" and button.text == "ON":
-            fermenters[1].serialCon.write('PT'.encode())
+            SERIAL_CON.write('PT2'.encode())
             Logger.info("Pump: Turning on Pump 2")
         elif button.group == "p3Status" and button.text == "ON":
-            fermenters[2].serialCon.write('PT'.encode())
+            SERIAL_CON.write('PT3'.encode())
             Logger.info("Pump: Turning on Pump 3")
         elif button.group == "p1Status":
-            fermenters[0].serialCon.write('PF'.encode())
+            SERIAL_CON.write('PF1'.encode())
             Logger.info("Pump: Turning off Pump 1")
-        elif button.group == "p1Status":
-            fermenters[1].serialCon.write('PF'.encode())
+        elif button.group == "p2Status":
+            SERIAL_CON.write('PF2'.encode())
             Logger.info("Pump: Turning off Pump 2")
-        elif button.group == "p1Status":
-            fermenters[2].serialCon.write('PF'.encode())
+        elif button.group == "p3Status":
+            SERIAL_CON.write('PF3'.encode())
             Logger.info("Pump: Turning off Pump 3")
 
     def get_config(self):
@@ -209,17 +216,22 @@ class GraphScreen(Screen):
         # Timestamp represents the time when data is requested
         timestamp = datetime.datetime.now()
 
+        row = get_data(SERIAL_CON)
+
+        # Need to reorder the row to fit the dataframe
+        i = 0
         for ferm in fermenters:
-            if ferm.active is True:
-                # Request data from fermenter
-                row = get_data(ferm.id, ferm.serialCon)
+            if ferm.active:
+                temp = row[i]
+                ph = row[i+1]
+                do = row[i+2]
 
-                # When all data is collected proceed
-                if row is not None:
-                    fermControl(ferm.serialCon, ferm.temp, row[3], ferm.auto)
+                fermControl(SERIAL_CON, ferm, temp)
 
-                    row[0] = datetime.datetime.now()
-                    df.loc[timestamp, ferm.name] = row
+                time = datetime.datetime.now()
+                df.loc[timestamp, ferm.name] = [time, temp, ph, do]
+
+                i += 3
 
         df.to_csv(filename)
 
@@ -240,7 +252,7 @@ class GraphScreen(Screen):
 
         Logger.info("App: Starting data collection . . .")
         Clock.schedule_interval(self.main_callback, SAMPLING_RATE)
-        Clock.schedule_interval(self.get_value, SAMPLING_RATE)
+        Clock.schedule_interval(self.get_value, SAMPLING_RATE*2)
 
     def stop(self):
         """
@@ -279,6 +291,9 @@ class GraphScreen(Screen):
 
         df = resample_data(self.filename, self.range)
 
+        if df is None:
+            return
+
         self.tempplot.points = [(i, j) for i, j in enumerate(
             df[self.fermenter]['Temp (C)'])]
 
@@ -305,5 +320,7 @@ if __name__ == '__main__':
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(setup)
         fermenters = future.result()
+
+    SERIAL_CON = ardCon('COM4')
 
     BrewLabApp().run()
