@@ -85,21 +85,21 @@ void loop(){
 
   if (message == "F"){
     if (F1) {
+      get_reading(102);
       get_reading(96);
       get_reading(99);
-      get_reading(102);
     }
 
     if (F2) {
+      get_reading(103);
       get_reading(97);
       get_reading(100);
-      get_reading(103);
     }
 
     if (F3) {
+      get_reading(104);
       get_reading(98);
       get_reading(101);
-      get_reading(104);
     }
 
     Serial.println();

@@ -20,10 +20,6 @@ if os.environ.get("MODE") == "dev":
     Logger.warning("App: Activating development mode...")
     from brewlab import fakeSerial as serial
 
-"""
-If you change the sampling rate be sure to make changes to brewlab.user.resample_data()
-"""
-
 SAMPLING_RATE = 60
 
 class MenuScreen(Screen):
@@ -223,9 +219,9 @@ class GraphScreen(Screen):
         row = get_data(SERIAL_CON)
 
         # Need to reorder the row to fit the dataframe
+        i = 0
         for ferm in fermenters:
             if ferm.active:
-                i = 0
                 temp = row[i]
                 ph = row[i+1]
                 do = row[i+2]

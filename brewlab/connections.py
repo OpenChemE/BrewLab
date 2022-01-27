@@ -100,6 +100,4 @@ def get_data(serialCon):
         data = serialCon.readline().decode()
         values = [float(s) for s in re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", data)]
 
-        print(values)
-
     return values
